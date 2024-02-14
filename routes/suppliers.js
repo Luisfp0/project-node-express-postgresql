@@ -1,21 +1,22 @@
 import express from "express";
 import client from "../db.js";
+
 import {
-  getClients,
-  addClient,
-  updateClient,
-  deleteClient,
-} from "../controllers/users.js";
+  getSuppliers,
+  addSupplier,
+  updateSupplier,
+  deleteSupplier,
+} from "../controllers/suppliers.js";
 
 const router = express.Router();
 
-router.get("/", getClients);
+router.get("/", getSuppliers);
 
-router.post("/", addClient);
+router.post("/", addSupplier);
 
-router.patch("/:id", updateClient);
+router.patch("/:id", updateSupplier);
 
-router.delete("/:id", deleteClient);
+router.delete("/:id", deleteSupplier);
 
 process.on("SIGINT", () => {
   client.end();
