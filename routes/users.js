@@ -54,6 +54,29 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
+router.delete("/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const checkClient = await client.query(
+      "SELECT * FROM cliente WHERE id = $1",
+      [id]
+    );
+
+    if (checkClient.rows.length === 0) {
+      return res.status(404).json({ error: "Cliente não encontrado" });
+    }
+
+    const result = await client.query(
+      "DELETE FROM cliente WHERE id = $1 RETURNING *",
+      [id]
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Erro ao deletar cliente:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
 process.on("SIGINT", () => {
   client.end();
   console.log("Conexão com o banco de dados encerrada.");
