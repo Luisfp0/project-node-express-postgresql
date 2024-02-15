@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import client from "../db.js";
 
 export async function getInvoices(req, res) {
@@ -12,7 +11,7 @@ export async function getInvoices(req, res) {
 }
 
 export async function addInvoice(req, res) {
-  const { products, clientName, supplier } = req.body;
+  const { products, clientId, supplierId } = req.body;
   try {
     let totalPrice = 0;
     if (!products || products.length === 0) {
@@ -21,18 +20,43 @@ export async function addInvoice(req, res) {
         .json({ error: "Nenhum produto fornecido na solicitação" });
     }
 
+    if (!clientId || clientId.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "Nenhum cliente fornecido na solicitação" });
+    }
+
+    if (!supplierId || supplierId.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "Nenhum fornecedor fornecido na solicitação" });
+    }
+
+    const clientQuery = await client.query(
+      "SELECT * FROM cliente WHERE id = $1",
+      [clientId]
+    );
+
+    const supplierQuery = await client.query(
+      "SELECT * FROM fornecedor WHERE id = $1",
+      [supplierId]
+    );
+
+    const clientData = clientQuery.rows[0];
+    const supplier = supplierQuery.rows[0];
+
     for (const productData of products) {
-      const { productName, quantity } = productData;
+      const { productId, quantity } = productData;
 
       const productQuery = await client.query(
-        "SELECT * FROM products WHERE name = $1",
-        [productName]
+        "SELECT * FROM products WHERE id = $1",
+        [productId]
       );
 
       if (productQuery.rows.length === 0) {
         return res
           .status(404)
-          .json({ error: `Produto '${productName}' não encontrado` });
+          .json({ error: `Produto com id: '${productId}' não encontrado` });
       }
 
       const productPrice = parseFloat(
@@ -41,6 +65,15 @@ export async function addInvoice(req, res) {
 
       totalPrice += productPrice * quantity;
     }
+
+    const formattedPrice = (totalPrice / 100).toFixed(2);
+
+    const result = await client.query(
+      "INSERT INTO invoices (price, client, supplier) VALUES ($1, $2, $3) RETURNING *",
+      [formattedPrice, clientData, supplier]
+    );
+
+    res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error("Erro ao processar produtos:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
