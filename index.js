@@ -2,6 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import usersRoutes from "./routes/users.js";
 import suppliersRoutes from "./routes/suppliers.js";
+import productsRoutes from "./routes/products.js";
 import client from "./db.js";
 
 const app = express();
@@ -10,6 +11,7 @@ const PORT = 5000;
 app.use(bodyParser.json());
 app.use("/users", usersRoutes);
 app.use("/suppliers", suppliersRoutes);
+app.use("/products", productsRoutes);
 
 app.get("/", (req, res) => res.send("Hello from homepage."));
 
