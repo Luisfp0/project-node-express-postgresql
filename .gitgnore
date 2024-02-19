@@ -1,0 +1,21 @@
+# Arquivos de compilação
+/dist
+
+# Arquivos de dependências instaladas
+/node_modules
+
+# Arquivos de log e saída
+logs
+*.log
+npm-debug.log*
+
+# Arquivos de configuração específicos do usuário
+.env
+
+# Arquivos temporários
+*.tmp
+*.temp
+*.bak
+
+# Arquivos de cache
+.cache
