@@ -1,7 +1,13 @@
-import client from "../db.js";
-export async function getInvoices(req, res) {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.deleteInvoice = exports.updateInvoice = exports.addInvoice = exports.getInvoices = void 0;
+const db_js_1 = __importDefault(require("../db.js"));
+async function getInvoices(req, res) {
     try {
-        const result = await client.query("SELECT * FROM invoices");
+        const result = await db_js_1.default.query("SELECT * FROM invoices");
         res.json(result.rows);
     }
     catch (error) {
@@ -9,7 +15,8 @@ export async function getInvoices(req, res) {
         res.status(500).json({ error: "Erro interno do servidor" });
     }
 }
-export async function addInvoice(req, res) {
+exports.getInvoices = getInvoices;
+async function addInvoice(req, res) {
     const { products, clientId, supplierId } = req.body;
     try {
         let totalPrice = 0;
@@ -28,13 +35,13 @@ export async function addInvoice(req, res) {
                 .status(400)
                 .json({ error: "Nenhum fornecedor fornecido na solicitação" });
         }
-        const clientQuery = await client.query("SELECT * FROM cliente WHERE id = $1", [clientId]);
-        const supplierQuery = await client.query("SELECT * FROM fornecedor WHERE id = $1", [supplierId]);
+        const clientQuery = await db_js_1.default.query("SELECT * FROM cliente WHERE id = $1", [clientId]);
+        const supplierQuery = await db_js_1.default.query("SELECT * FROM fornecedor WHERE id = $1", [supplierId]);
         const clientData = clientQuery.rows[0];
         const supplier = supplierQuery.rows[0];
         for (const productData of products) {
             const { productId, quantity } = productData;
-            const productQuery = await client.query("SELECT * FROM products WHERE id = $1", [productId]);
+            const productQuery = await db_js_1.default.query("SELECT * FROM products WHERE id = $1", [productId]);
             if (productQuery.rows.length === 0) {
                 return res
                     .status(404)
@@ -44,7 +51,7 @@ export async function addInvoice(req, res) {
             totalPrice += productPrice * quantity;
         }
         const formattedPrice = (totalPrice / 100).toFixed(2);
-        const result = await client.query("INSERT INTO invoices (price, client, supplier) VALUES ($1, $2, $3) RETURNING *", [formattedPrice, clientData, supplier]);
+        const result = await db_js_1.default.query("INSERT INTO invoices (price, client, supplier) VALUES ($1, $2, $3) RETURNING *", [formattedPrice, clientData, supplier]);
         res.status(201).json(result.rows[0]);
     }
     catch (error) {
@@ -52,11 +59,12 @@ export async function addInvoice(req, res) {
         res.status(500).json({ error: "Erro interno do servidor" });
     }
 }
-export async function updateInvoice(req, res) {
+exports.addInvoice = addInvoice;
+async function updateInvoice(req, res) {
     const id = req.params.id;
     const { name, price } = req.body;
     try {
-        const checkProduct = await client.query("SELECT * FROM products WHERE id = $1", [id]);
+        const checkProduct = await db_js_1.default.query("SELECT * FROM products WHERE id = $1", [id]);
         if (checkProduct.rows.length === 0) {
             return res.status(404).json({ error: "Produto não encontrado" });
         }
@@ -72,7 +80,7 @@ export async function updateInvoice(req, res) {
             values.push(price);
         }
         query += " WHERE id = $1 RETURNING *";
-        const result = await client.query(query, values);
+        const result = await db_js_1.default.query(query, values);
         res.json(result.rows[0]);
     }
     catch (error) {
@@ -80,14 +88,15 @@ export async function updateInvoice(req, res) {
         res.status(500).json({ error: "Erro interno do servidor" });
     }
 }
-export async function deleteInvoice(req, res) {
+exports.updateInvoice = updateInvoice;
+async function deleteInvoice(req, res) {
     const id = req.params.id;
     try {
-        const checkClient = await client.query("SELECT * FROM products WHERE id = $1", [id]);
+        const checkClient = await db_js_1.default.query("SELECT * FROM products WHERE id = $1", [id]);
         if (checkClient.rows.length === 0) {
             return res.status(404).json({ error: "Produto não encontrado" });
         }
-        const result = await client.query("DELETE FROM products WHERE id = $1 RETURNING *", [id]);
+        const result = await db_js_1.default.query("DELETE FROM products WHERE id = $1 RETURNING *", [id]);
         res.json(result.rows[0]);
     }
     catch (error) {
@@ -95,3 +104,4 @@ export async function deleteInvoice(req, res) {
         res.status(500).json({ error: "Erro interno do servidor" });
     }
 }
+exports.deleteInvoice = deleteInvoice;

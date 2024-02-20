@@ -2,13 +2,12 @@
     "name": "junior-project",
     "version": "1.0.0",
     "description": "",
-    "type": "module",
+    "type": "commonjs",
     "main": "dist/index.js",
     "scripts": {
         "prestart": "npm run build",
         "start": "node dist/index.js",
-        "build": "tsc",
-        "serve": "node dist/index.js"
+        "build": "tsc"
     },
     "keywords": [],
     "author": "",

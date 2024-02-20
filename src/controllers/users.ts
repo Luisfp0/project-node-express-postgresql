@@ -1,10 +1,11 @@
+import { v4 as uuidv4 } from "uuid";
 import { Request, Response } from "express";
 import client from "../db.js";
-import { v4 as uuidv4 } from "uuid";
 
 export async function getClients(req: Request, res: Response) {
   try {
-    const result = await client.query("SELECT * FROM cliente");
+    const query = "SELECT * FROM cliente";
+    const result = await client.query(query);
     res.json(result.rows);
   } catch (error) {
     console.error("Erro ao buscar registros:", error);

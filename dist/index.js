@@ -1,26 +1,31 @@
-import express from "express";
-import bodyParser from "body-parser";
-import usersRoutes from "./routes/users.js";
-import suppliersRoutes from "./routes/suppliers.js";
-import productsRoutes from "./routes/products.js";
-import invoiceRoutes from "./routes/invoices.js";
-import client from "./db.js";
-const app = express();
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const body_parser_1 = __importDefault(require("body-parser"));
+const users_js_1 = __importDefault(require("./routes/users.js"));
+const suppliers_js_1 = __importDefault(require("./routes/suppliers.js"));
+const products_js_1 = __importDefault(require("./routes/products.js"));
+const invoices_js_1 = __importDefault(require("./routes/invoices.js"));
+const db_js_1 = __importDefault(require("./db.js"));
+const app = (0, express_1.default)();
 const PORT = 5000;
-app.use(bodyParser.json());
-app.use("/users", usersRoutes);
-app.use("/suppliers", suppliersRoutes);
-app.use("/products", productsRoutes);
-app.use("/invoices", invoiceRoutes);
+app.use(body_parser_1.default.json());
+app.use("/users", users_js_1.default);
+app.use("/suppliers", suppliers_js_1.default);
+app.use("/products", products_js_1.default);
+app.use("/invoices", invoices_js_1.default);
 app.get("/", (req, res) => res.send("Hello from HomePage."));
-client
-  .connect()
-  .then(() => {
+db_js_1.default
+    .connect()
+    .then(() => {
     app.listen(PORT, () => {
-      console.log(`server running on port: http://localhost:${PORT}`);
+        console.log(`server running on port: http://localhost:${PORT}`);
     });
-  })
-  .catch((error) => {
+})
+    .catch((error) => {
     console.error("Erro ao conectar ao banco de dados:", error);
     process.exit(1);
-  });
+});

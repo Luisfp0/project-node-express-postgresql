@@ -1,8 +1,15 @@
-import client from "../db.js";
-import { v4 as uuidv4 } from "uuid";
-export async function getClients(req, res) {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.deleteClient = exports.updateClient = exports.addClient = exports.getClients = void 0;
+const uuid_1 = require("uuid");
+const db_js_1 = __importDefault(require("../db.js"));
+async function getClients(req, res) {
     try {
-        const result = await client.query("SELECT * FROM cliente");
+        const query = "SELECT * FROM cliente";
+        const result = await db_js_1.default.query(query);
         res.json(result.rows);
     }
     catch (error) {
@@ -10,10 +17,11 @@ export async function getClients(req, res) {
         res.status(500).json({ error: "Erro interno do servidor" });
     }
 }
-export async function addClient(req, res) {
+exports.getClients = getClients;
+async function addClient(req, res) {
     const { name } = req.body;
     try {
-        const result = await client.query("INSERT INTO cliente (id, nome) VALUES ($1, $2) RETURNING *", [uuidv4(), name]);
+        const result = await db_js_1.default.query("INSERT INTO cliente (id, nome) VALUES ($1, $2) RETURNING *", [(0, uuid_1.v4)(), name]);
         res.status(201).json(result.rows[0]);
     }
     catch (error) {
@@ -21,15 +29,16 @@ export async function addClient(req, res) {
         res.status(500).json({ error: "Erro interno do servidor" });
     }
 }
-export async function updateClient(req, res) {
+exports.addClient = addClient;
+async function updateClient(req, res) {
     const id = req.params.id;
     const { name } = req.body;
     try {
-        const checkClient = await client.query("SELECT * FROM cliente WHERE id = $1", [id]);
+        const checkClient = await db_js_1.default.query("SELECT * FROM cliente WHERE id = $1", [id]);
         if (checkClient.rows.length === 0) {
             return res.status(404).json({ error: "Cliente não encontrado" });
         }
-        const result = await client.query("UPDATE cliente SET nome = $1 WHERE id = $2 RETURNING *", [name, id]);
+        const result = await db_js_1.default.query("UPDATE cliente SET nome = $1 WHERE id = $2 RETURNING *", [name, id]);
         res.json(result.rows[0]);
     }
     catch (error) {
@@ -37,14 +46,15 @@ export async function updateClient(req, res) {
         res.status(500).json({ error: "Erro interno do servidor" });
     }
 }
-export async function deleteClient(req, res) {
+exports.updateClient = updateClient;
+async function deleteClient(req, res) {
     const id = req.params.id;
     try {
-        const checkClient = await client.query("SELECT * FROM cliente WHERE id = $1", [id]);
+        const checkClient = await db_js_1.default.query("SELECT * FROM cliente WHERE id = $1", [id]);
         if (checkClient.rows.length === 0) {
             return res.status(404).json({ error: "Cliente não encontrado" });
         }
-        const result = await client.query("DELETE FROM cliente WHERE id = $1 RETURNING *", [id]);
+        const result = await db_js_1.default.query("DELETE FROM cliente WHERE id = $1 RETURNING *", [id]);
         res.json(result.rows[0]);
     }
     catch (error) {
@@ -52,3 +62,4 @@ export async function deleteClient(req, res) {
         res.status(500).json({ error: "Erro interno do servidor" });
     }
 }
+exports.deleteClient = deleteClient;
