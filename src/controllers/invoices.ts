@@ -84,29 +84,41 @@ export async function addInvoice(req: Request, res: Response) {
 
 export async function updateInvoice(req: Request, res: Response) {
   const id = req.params.id;
-  const { name, price } = req.body;
+  const { price, clientname, clientid, suppliername, supplierid } = req.body;
   try {
-    const checkProduct = await client.query(
-      "SELECT * FROM products WHERE id = $1",
+    const checkInvoice = await client.query(
+      "SELECT * FROM invoices WHERE id = $1",
       [id]
     );
 
-    if (checkProduct.rows.length === 0) {
+    if (checkInvoice.rows.length === 0) {
       return res.status(404).json({ error: "Produto não encontrado" });
     }
 
     const values = [id];
-    let query = "UPDATE products SET";
+    let query = "UPDATE invoices SET";
 
     let parameterIndex = 2;
 
-    if (name) {
-      query += " name = $" + parameterIndex++;
-      values.push(name);
-    }
     if (price) {
       query += " price = $" + parameterIndex++;
       values.push(price);
+    }
+    if (clientname) {
+      query += " clientname = $" + parameterIndex++;
+      values.push(clientname);
+    }
+    if (clientid) {
+      query += " clientid = $" + parameterIndex++;
+      values.push(clientid);
+    }
+    if (suppliername) {
+      query += " suppliername = $" + parameterIndex++;
+      values.push(suppliername);
+    }
+    if (supplierid) {
+      query += " supplierid = $" + parameterIndex++;
+      values.push(supplierid);
     }
 
     query += " WHERE id = $1 RETURNING *";
@@ -114,7 +126,7 @@ export async function updateInvoice(req: Request, res: Response) {
     const result = await client.query(query, values);
     res.json(result.rows[0]);
   } catch (error) {
-    console.error("Erro ao atualizar produto:", error);
+    console.error("Erro ao atualizar nota fiscal:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
   }
 }
