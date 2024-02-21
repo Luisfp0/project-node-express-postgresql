@@ -97,12 +97,12 @@ exports.updateInvoice = updateInvoice;
 async function deleteInvoice(req, res) {
     const id = req.params.id;
     try {
-        const checkClient = await db_js_1.default.query("SELECT * FROM products WHERE id = $1", [id]);
-        if (checkClient.rows.length === 0) {
-            return res.status(404).json({ error: "Produto não encontrado" });
+        const checkInvoice = await db_js_1.default.query("SELECT * FROM invoices WHERE invoicenumber = $1", [id]);
+        if (checkInvoice.rows.length === 0) {
+            return res.status(404).json({ error: "Nota fiscal não encontrada" });
         }
-        const result = await db_js_1.default.query("DELETE FROM products WHERE id = $1 RETURNING *", [id]);
-        res.json(result.rows[0]);
+        const result = await db_js_1.default.query("DELETE FROM invoices WHERE invoicenumber = $1 RETURNING *", [id]);
+        res.json(`Nota fical número ${id} deletada.`);
     }
     catch (error) {
         console.error("Erro ao deletar produto:", error);
