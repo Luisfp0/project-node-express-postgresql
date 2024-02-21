@@ -36,9 +36,9 @@ async function addInvoice(req, res) {
                 .json({ error: "Nenhum fornecedor fornecido na solicitação" });
         }
         const clientQuery = await db_js_1.default.query("SELECT * FROM cliente WHERE id = $1", [clientId]);
-        const supplierQuery = await db_js_1.default.query("SELECT * FROM fornecedor WHERE id = $1", [supplierId]);
         const clientData = clientQuery.rows[0];
-        const supplier = supplierQuery.rows[0];
+        const supplierQuery = await db_js_1.default.query("SELECT * FROM fornecedor WHERE id = $1", [supplierId]);
+        const supplierData = supplierQuery.rows[0];
         for (const productData of products) {
             const { productId, quantity } = productData;
             const productQuery = await db_js_1.default.query("SELECT * FROM products WHERE id = $1", [productId]);
@@ -47,11 +47,16 @@ async function addInvoice(req, res) {
                     .status(404)
                     .json({ error: `Produto com id: '${productId}' não encontrado` });
             }
-            const productPrice = parseFloat(productQuery.rows[0].price.replace(/[^\d.-]/g, ""));
+            const productPrice = productQuery.rows[0].price;
             totalPrice += productPrice * quantity;
         }
-        const formattedPrice = (totalPrice / 100).toFixed(2);
-        const result = await db_js_1.default.query("INSERT INTO invoices (price, client, supplier) VALUES ($1, $2, $3) RETURNING *", [formattedPrice, clientData, supplier]);
+        const result = await db_js_1.default.query("INSERT INTO invoices (price, clientname, clientid, suppliername, supplierid) VALUES ($1, $2, $3, $4, $5) RETURNING *", [
+            totalPrice.toFixed(2),
+            clientData.name,
+            clientData.id,
+            supplierData.name,
+            supplierData.id,
+        ]);
         res.status(201).json(result.rows[0]);
     }
     catch (error) {

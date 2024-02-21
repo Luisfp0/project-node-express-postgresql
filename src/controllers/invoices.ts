@@ -15,6 +15,7 @@ export async function addInvoice(req: Request, res: Response) {
   const { products, clientId, supplierId } = req.body;
   try {
     let totalPrice = 0;
+
     if (!products || products.length === 0) {
       return res
         .status(400)
@@ -37,14 +38,13 @@ export async function addInvoice(req: Request, res: Response) {
       "SELECT * FROM cliente WHERE id = $1",
       [clientId]
     );
+    const clientData = clientQuery.rows[0];
 
     const supplierQuery = await client.query(
       "SELECT * FROM fornecedor WHERE id = $1",
       [supplierId]
     );
-
-    const clientData = clientQuery.rows[0];
-    const supplier = supplierQuery.rows[0];
+    const supplierData = supplierQuery.rows[0];
 
     for (const productData of products) {
       const { productId, quantity } = productData;
@@ -60,18 +60,19 @@ export async function addInvoice(req: Request, res: Response) {
           .json({ error: `Produto com id: '${productId}' não encontrado` });
       }
 
-      const productPrice = parseFloat(
-        productQuery.rows[0].price.replace(/[^\d.-]/g, "")
-      );
-
+      const productPrice = productQuery.rows[0].price;
       totalPrice += productPrice * quantity;
     }
 
-    const formattedPrice = (totalPrice / 100).toFixed(2);
-
     const result = await client.query(
-      "INSERT INTO invoices (price, client, supplier) VALUES ($1, $2, $3) RETURNING *",
-      [formattedPrice, clientData, supplier]
+      "INSERT INTO invoices (price, clientname, clientid, suppliername, supplierid) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [
+        totalPrice.toFixed(2),
+        clientData.name,
+        clientData.id,
+        supplierData.name,
+        supplierData.id,
+      ]
     );
 
     res.status(201).json(result.rows[0]);
