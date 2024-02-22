@@ -20,7 +20,7 @@ exports.getProducts = getProducts;
 async function addProducts(req, res) {
     const { name, price } = req.body;
     try {
-        const result = await db_js_1.default.query("INSERT INTO products (id, name, price) VALUES ($1, $2, $3) RETURNING *", [(0, uuid_1.v4)(), name, price]);
+        const result = await db_js_1.default.query("INSERT INTO products (product_id, product_name, product_price) VALUES ($1, $2, $3) RETURNING *", [(0, uuid_1.v4)(), name, price]);
         res.status(201).json(result.rows[0]);
     }
     catch (error) {
@@ -33,7 +33,7 @@ async function updateProduct(req, res) {
     const id = req.params.id;
     const { name, price } = req.body;
     try {
-        const checkProduct = await db_js_1.default.query("SELECT * FROM products WHERE id = $1", [id]);
+        const checkProduct = await db_js_1.default.query("SELECT * FROM products WHERE product_id = $1", [id]);
         if (checkProduct.rows.length === 0) {
             return res.status(404).json({ error: "Produto não encontrado" });
         }
@@ -41,14 +41,14 @@ async function updateProduct(req, res) {
         let query = "UPDATE products SET";
         let parameterIndex = 2;
         if (name) {
-            query += " name = $" + parameterIndex++;
+            query += " product_name = $" + parameterIndex++ + ",";
             values.push(name);
         }
         if (price) {
-            query += " price = $" + parameterIndex++;
+            query += " product_price = $" + parameterIndex++;
             values.push(price);
         }
-        query += " WHERE id = $1 RETURNING *";
+        query += " WHERE product_id = $1 RETURNING *";
         const result = await db_js_1.default.query(query, values);
         res.json(result.rows[0]);
     }
@@ -61,11 +61,11 @@ exports.updateProduct = updateProduct;
 async function deleteProducts(req, res) {
     const id = req.params.id;
     try {
-        const checkClient = await db_js_1.default.query("SELECT * FROM products WHERE id = $1", [id]);
+        const checkClient = await db_js_1.default.query("SELECT * FROM products WHERE product_id = $1", [id]);
         if (checkClient.rows.length === 0) {
             return res.status(404).json({ error: "Produto não encontrado" });
         }
-        const result = await db_js_1.default.query("DELETE FROM products WHERE id = $1 RETURNING *", [id]);
+        const result = await db_js_1.default.query("DELETE FROM products WHERE product_id = $1 RETURNING *", [id]);
         res.json(result.rows[0]);
     }
     catch (error) {

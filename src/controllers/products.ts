@@ -16,7 +16,7 @@ export async function addProducts(req: Request, res: Response) {
   const { name, price } = req.body;
   try {
     const result = await client.query(
-      "INSERT INTO products (id, name, price) VALUES ($1, $2, $3) RETURNING *",
+      "INSERT INTO products (product_id, product_name, product_price) VALUES ($1, $2, $3) RETURNING *",
       [uuidv4(), name, price]
     );
     res.status(201).json(result.rows[0]);
@@ -31,7 +31,7 @@ export async function updateProduct(req: Request, res: Response) {
   const { name, price } = req.body;
   try {
     const checkProduct = await client.query(
-      "SELECT * FROM products WHERE id = $1",
+      "SELECT * FROM products WHERE product_id = $1",
       [id]
     );
 
@@ -45,15 +45,15 @@ export async function updateProduct(req: Request, res: Response) {
     let parameterIndex = 2;
 
     if (name) {
-      query += " name = $" + parameterIndex++;
+      query += " product_name = $" + parameterIndex++ + ",";
       values.push(name);
     }
     if (price) {
-      query += " price = $" + parameterIndex++;
+      query += " product_price = $" + parameterIndex++;
       values.push(price);
     }
 
-    query += " WHERE id = $1 RETURNING *";
+    query += " WHERE product_id = $1 RETURNING *";
 
     const result = await client.query(query, values);
     res.json(result.rows[0]);
@@ -67,7 +67,7 @@ export async function deleteProducts(req: Request, res: Response) {
   const id = req.params.id;
   try {
     const checkClient = await client.query(
-      "SELECT * FROM products WHERE id = $1",
+      "SELECT * FROM products WHERE product_id = $1",
       [id]
     );
 
@@ -76,7 +76,7 @@ export async function deleteProducts(req: Request, res: Response) {
     }
 
     const result = await client.query(
-      "DELETE FROM products WHERE id = $1 RETURNING *",
+      "DELETE FROM products WHERE product_id = $1 RETURNING *",
       [id]
     );
     res.json(result.rows[0]);
