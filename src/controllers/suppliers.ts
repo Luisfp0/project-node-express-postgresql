@@ -4,7 +4,7 @@ import client from "../db.js";
 
 export async function getSuppliers(req: Request, res: Response) {
   try {
-    const result = await client.query("SELECT * FROM fornecedor");
+    const result = await client.query("SELECT * FROM suppliers");
     res.json(result.rows);
   } catch (error) {
     console.error("Erro ao buscar registros:", error);
@@ -13,11 +13,11 @@ export async function getSuppliers(req: Request, res: Response) {
 }
 
 export async function addSupplier(req: Request, res: Response) {
-  const { supplierName } = req.body;
+  const { name } = req.body;
   try {
     const result = await client.query(
-      "INSERT INTO fornecedor (id, nome) VALUES ($1, $2) RETURNING *",
-      [uuidv4(), supplierName]
+      "INSERT INTO suppliers (supplier_id, supplier_name) VALUES ($1, $2) RETURNING *",
+      [uuidv4(), name]
     );
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -28,10 +28,10 @@ export async function addSupplier(req: Request, res: Response) {
 
 export async function updateSupplier(req: Request, res: Response) {
   const id = req.params.id;
-  const { supplierName } = req.body;
+  const { name } = req.body;
   try {
     const checkClient = await client.query(
-      "SELECT * FROM fornecedor WHERE id = $1",
+      "SELECT * FROM suppliers WHERE supplier_id = $1",
       [id]
     );
 
@@ -40,8 +40,8 @@ export async function updateSupplier(req: Request, res: Response) {
     }
 
     const result = await client.query(
-      "UPDATE fornecedor SET nome = $1 WHERE id = $2 RETURNING *",
-      [supplierName, id]
+      "UPDATE suppliers SET supplier_name = $1 WHERE supplier_id = $2 RETURNING *",
+      [name, id]
     );
     res.json(result.rows[0]);
   } catch (error) {
@@ -54,7 +54,7 @@ export async function deleteSupplier(req: Request, res: Response) {
   const id = req.params.id;
   try {
     const checkClient = await client.query(
-      "SELECT * FROM fornecedor WHERE id = $1",
+      "SELECT * FROM suppliers WHERE supplier_id = $1",
       [id]
     );
 
@@ -63,7 +63,7 @@ export async function deleteSupplier(req: Request, res: Response) {
     }
 
     const result = await client.query(
-      "DELETE FROM fornecedor WHERE id = $1 RETURNING *",
+      "DELETE FROM suppliers WHERE supplier_id = $1 RETURNING *",
       [id]
     );
     res.json(result.rows[0]);
