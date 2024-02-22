@@ -13,7 +13,7 @@ const db_js_1 = __importDefault(require("./db.js"));
 const app = (0, express_1.default)();
 const PORT = 5000;
 app.use(body_parser_1.default.json());
-app.use("/users", users_js_1.default);
+app.use("/clients", users_js_1.default);
 app.use("/suppliers", suppliers_js_1.default);
 app.use("/products", products_js_1.default);
 app.use("/invoices", invoices_js_1.default);

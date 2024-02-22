@@ -4,7 +4,7 @@ import client from "../db.js";
 
 export async function getClients(req: Request, res: Response) {
   try {
-    const query = "SELECT * FROM cliente";
+    const query = "SELECT * FROM clients";
     const result = await client.query(query);
     res.json(result.rows);
   } catch (error) {
@@ -17,7 +17,7 @@ export async function addClient(req: Request, res: Response) {
   const { name } = req.body;
   try {
     const result = await client.query(
-      "INSERT INTO cliente (id, nome) VALUES ($1, $2) RETURNING *",
+      "INSERT INTO clients (client_id, client_name) VALUES ($1, $2) RETURNING *",
       [uuidv4(), name]
     );
     res.status(201).json(result.rows[0]);
@@ -32,7 +32,7 @@ export async function updateClient(req: Request, res: Response) {
   const { name } = req.body;
   try {
     const checkClient = await client.query(
-      "SELECT * FROM cliente WHERE id = $1",
+      "SELECT * FROM clients WHERE client_id = $1",
       [id]
     );
 
@@ -41,7 +41,7 @@ export async function updateClient(req: Request, res: Response) {
     }
 
     const result = await client.query(
-      "UPDATE cliente SET nome = $1 WHERE id = $2 RETURNING *",
+      "UPDATE clients SET client_name = $1 WHERE client_id = $2 RETURNING *",
       [name, id]
     );
     res.json(result.rows[0]);
@@ -55,7 +55,7 @@ export async function deleteClient(req: Request, res: Response) {
   const id = req.params.id;
   try {
     const checkClient = await client.query(
-      "SELECT * FROM cliente WHERE id = $1",
+      "SELECT * FROM clients WHERE client_id = $1",
       [id]
     );
 
@@ -64,7 +64,7 @@ export async function deleteClient(req: Request, res: Response) {
     }
 
     const result = await client.query(
-      "DELETE FROM cliente WHERE id = $1 RETURNING *",
+      "DELETE FROM clients WHERE client_id = $1 RETURNING *",
       [id]
     );
     res.json(result.rows[0]);

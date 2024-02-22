@@ -7,9 +7,9 @@ const pg_1 = __importDefault(require("pg"));
 const { Client } = pg_1.default;
 const client = new Client({
     user: "postgres",
-    host: "45.160.171.241",
-    database: "financial",
-    password: "123456789",
+    host: "localhost",
+    database: "postgres",
+    password: "slacara",
     port: 5432,
 });
 exports.default = client;
