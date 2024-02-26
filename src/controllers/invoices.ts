@@ -31,17 +31,17 @@ export async function addInvoice(req: Request, res: Response) {
     if (!supplierId || supplierId.length === 0) {
       return res
         .status(400)
-        .json({ error: "Nenhum fornecedor fornecido na solicitação" });
+        .json({ error: "Nenhum fornecedor encontrado na solicitação" });
     }
 
     const clientQuery = await client.query(
-      "SELECT * FROM cliente WHERE id = $1",
+      "SELECT * FROM clients WHERE client_id = $1",
       [clientId]
     );
     const clientData = clientQuery.rows[0];
 
     const supplierQuery = await client.query(
-      "SELECT * FROM fornecedor WHERE id = $1",
+      "SELECT * FROM suppliers WHERE supplier_id = $1",
       [supplierId]
     );
     const supplierData = supplierQuery.rows[0];
@@ -50,7 +50,7 @@ export async function addInvoice(req: Request, res: Response) {
       const { productId, quantity } = productData;
 
       const productQuery = await client.query(
-        "SELECT * FROM products WHERE id = $1",
+        "SELECT * FROM products WHERE product_id = $1",
         [productId]
       );
 
@@ -59,19 +59,18 @@ export async function addInvoice(req: Request, res: Response) {
           .status(404)
           .json({ error: `Produto com id: '${productId}' não encontrado` });
       }
-
-      const productPrice = productQuery.rows[0].price;
+      const productPrice = productQuery.rows[0].product_price;
       totalPrice += productPrice * quantity;
     }
 
     const result = await client.query(
-      "INSERT INTO invoices (price, clientname, clientid, suppliername, supplierid) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      "INSERT INTO invoices (price, client_name, client_id, supplier_name, supplier_id) VALUES ($1, $2, $3, $4, $5) RETURNING *",
       [
         totalPrice.toFixed(2),
-        clientData.name,
-        clientData.id,
-        supplierData.name,
-        supplierData.id,
+        clientData.client_name,
+        clientData.client_id,
+        supplierData.supplier_name,
+        supplierData.supplier_id,
       ]
     );
 
@@ -84,44 +83,70 @@ export async function addInvoice(req: Request, res: Response) {
 
 export async function updateInvoice(req: Request, res: Response) {
   const id = req.params.id;
-  const { price, clientname, clientid, suppliername, supplierid } = req.body;
+  const { clientId, supplierId } = req.body;
+
   try {
     const checkInvoice = await client.query(
-      "SELECT * FROM invoices WHERE id = $1",
+      "SELECT * FROM invoices WHERE invoice_id = $1",
       [id]
     );
 
-    if (checkInvoice.rows.length === 0) {
-      return res.status(404).json({ error: "Produto não encontrado" });
+    if (!clientId || clientId.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "Nenhum cliente fornecido na solicitação" });
     }
 
-    const values = [id];
+    if (!supplierId || supplierId.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "Nenhum fornecedor encontrado na solicitação" });
+    }
+
+    if (checkInvoice.rows.length === 0) {
+      return res.status(404).json({ error: "Nota fiscal não encontrada" });
+    }
+
     let query = "UPDATE invoices SET";
 
-    let parameterIndex = 2;
+    const values = [];
+    let parameterIndex = 1;
 
-    if (price) {
-      query += " price = $" + parameterIndex++;
-      values.push(price);
-    }
-    if (clientname) {
-      query += " clientname = $" + parameterIndex++;
-      values.push(clientname);
-    }
-    if (clientid) {
-      query += " clientid = $" + parameterIndex++;
-      values.push(clientid);
-    }
-    if (suppliername) {
-      query += " suppliername = $" + parameterIndex++;
-      values.push(suppliername);
-    }
-    if (supplierid) {
-      query += " supplierid = $" + parameterIndex++;
-      values.push(supplierid);
+    if (clientId) {
+      const clientQuery = await client.query(
+        "SELECT * FROM clients WHERE client_id = $1",
+        [clientId]
+      );
+      const clientData = clientQuery.rows[0];
+      query += " client_id = $" + parameterIndex;
+      values.push(clientId);
+      parameterIndex++;
+      query += ", client_name = $" + parameterIndex;
+      values.push(clientData.client_name);
+      parameterIndex++;
     }
 
-    query += " WHERE id = $1 RETURNING *";
+    if (supplierId) {
+      const supplierQuery = await client.query(
+        "SELECT * FROM suppliers WHERE supplier_id = $1",
+        [supplierId]
+      );
+      const supplierData = supplierQuery.rows[0];
+      if (clientId) query += ",";
+      query += " supplier_id = $" + parameterIndex;
+      values.push(supplierId);
+      parameterIndex++;
+      query += ", supplier_name = $" + parameterIndex;
+      values.push(supplierData.supplier_name);
+      parameterIndex++;
+    }
+
+    query += " WHERE invoice_id = $" + parameterIndex;
+    values.push(id);
+    query += " RETURNING *";
+
+    console.log(query);
+    console.log(values);
 
     const result = await client.query(query, values);
     res.json(result.rows[0]);
