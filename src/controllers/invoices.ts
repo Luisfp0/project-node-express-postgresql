@@ -160,7 +160,7 @@ export async function deleteInvoice(req: Request, res: Response) {
   const id = req.params.id;
   try {
     const checkInvoice = await client.query(
-      "SELECT * FROM invoices WHERE invoicenumber = $1",
+      "SELECT * FROM invoices WHERE invoice_id = $1",
       [id]
     );
 
@@ -169,7 +169,7 @@ export async function deleteInvoice(req: Request, res: Response) {
     }
 
     const result = await client.query(
-      "DELETE FROM invoices WHERE invoicenumber = $1 RETURNING *",
+      "DELETE FROM invoices WHERE invoice_id = $1 RETURNING *",
       [id]
     );
     res.json(`Nota fical número ${id} deletada.`);
